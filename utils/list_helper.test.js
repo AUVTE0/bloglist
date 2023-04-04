@@ -1,4 +1,4 @@
-const {dummy, totalLikes, favouriteBlog} = require('../utils/list_helper')
+const {dummy, totalLikes, favouriteBlog, mostBlogs} = require('../utils/list_helper')
 const testBlogs = [
     {
       _id: "5a422a851b54a676234d17f7",
@@ -81,14 +81,29 @@ describe('favourite blog', () => {
 
     test('of a bigger list is returns correct blog', () => {
         const blogs = testBlogs
-        const favBlog =   {
-            _id: "5a422a851b54a676234d17f7",
-            title: "React patterns",
-            author: "Michael Chan",
-            url: "https://reactpatterns.com/",
-            likes: 7,
+        const favBlog =       {
+            _id: "5a422b3a1b54a676234d17f9",
+            title: "Canonical string reduction",
+            author: "Edsger W. Dijkstra",
+            url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+            likes: 12,
             __v: 0
           }
         expect(favouriteBlog(blogs)).toEqual(favBlog)
+    })
+})
+
+describe('most blogs', () => {
+    test('of empty list is null', () => {
+        const blogs = []
+        expect(mostBlogs(blogs)).toBe(null)
+    })
+    test('of a bigger list is returns correct author and count', () => {
+        const blogs = testBlogs
+        const count = {
+            author: "Robert C. Martin",
+            blogs: 3
+        }
+        expect(mostBlogs(blogs)).toEqual(count)
     })
 })
