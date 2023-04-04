@@ -17,7 +17,7 @@ const errorHandler = (error, req, res, next) => {
     next(error)
 }
 
-const unknownEndpoint = (req, res, next) => {
+const unknownEndpoint = (req, res) => {
     logger.info('request made with unknown endpoint')
     res.status(400).send({error: 'unknown endpoint'})
 }
