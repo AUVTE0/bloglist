@@ -1,4 +1,4 @@
-const {dummy, totalLikes, favouriteBlog, mostBlogs} = require('../utils/list_helper')
+const {dummy, totalLikes, favouriteBlog, mostBlogs, mostLikes} = require('../utils/list_helper')
 const testBlogs = [
     {
       _id: "5a422a851b54a676234d17f7",
@@ -101,9 +101,24 @@ describe('most blogs', () => {
     test('of a bigger list is returns correct author and count', () => {
         const blogs = testBlogs
         const count = {
-            author: "Robert C. Martin",
+            author: 'Robert C. Martin',
             blogs: 3
         }
         expect(mostBlogs(blogs)).toEqual(count)
+    })
+})
+
+describe('most likes', () => {
+    test('of empty list is null', () => {
+        const blogs = []
+        expect(mostLikes(blogs)).toBe(null)
+    })
+    test('of a bigger list is returns correct author and count', () => {
+        const blogs = testBlogs
+        const sum = {
+            author: 'Edsger W. Dijkstra',
+            likes: 17
+        }
+        expect(mostLikes(blogs)).toEqual(sum)
     })
 })
