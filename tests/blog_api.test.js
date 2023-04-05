@@ -25,6 +25,23 @@ test('blogs UID property is named id', async () => {
     expect(blogs[0].id).toBeDefined()
 })
 
+test('blog is created successfully', async () => {
+    const blog = {
+        title: 'test blog',
+        author: 'test author',
+        url: 'testUrl',
+        likes: 5
+    }
+    await api
+        .post('/api/blogs')
+        .send(blog)
+        .expect(201)
+
+    const res = await api.get('/api/blogs')
+    expect(res.body).toHaveLength(helper.initialBlogs.length + 1)
+    expect(res.body.map(b => b.title)).toContain('test blog')
+})
+
 afterAll(async () => {
     await mongoose.connection.close()
 })
