@@ -5,18 +5,26 @@ const logger = require('../utils/logger')
 
 //login router
 usersRouter.post('/', async (req, res, next) => {
-    try {
-        const user = new User({
-            username: req.body.username,
-            name: req.body.name,
-            passwordHash: bcrypt.hashSync(req.body.password,10)
-        })
-
-        const result = await user.save()
-        res.status(201).json(result)
+    if(!req.body.password){
+        res.status(400).send({error: 'password is required'}).end()
     }
-    catch (exception) {
-        next(exception)
+    else if(req.body.password.length < 3){
+        res.status(400).send({error: 'password must be min 3 characters long'}).end()
+    }
+    else {
+        try {
+            const user = new User({
+                username: req.body.username,
+                name: req.body.name,
+                passwordHash: bcrypt.hashSync(req.body.password,10)
+            })
+
+            const result = await user.save()
+            res.status(201).json(result)
+        }
+        catch (exception) {
+            next(exception)
+        }
     }
 })
 

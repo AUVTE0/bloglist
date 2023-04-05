@@ -16,6 +16,9 @@ const errorHandler = (error, req, res, next) => {
     if (error.name === 'CastError'){
         return res.status(400).send({ error: 'malformed id'})
     }
+    if (req.path === '/api/users' && error.name === 'ValidationError'){
+        return res.status(400).send({ error: `invalid user creation: ${error.message}`})
+    }
     if (error.name === 'ValidationError'){
         return res.status(400).send({ error: 'missing property or incorrect type'})
     }

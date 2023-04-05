@@ -20,7 +20,7 @@ test('blogs are returned as json', async () => {
 
 test('blogs UID property is named id', async () => {
     const blogs = await helper.blogsInDb()
-
+    console.log(blogs)
     expect(blogs[0].id).toBeDefined()
 })
 
