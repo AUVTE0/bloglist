@@ -67,7 +67,7 @@ test('missing title or url sends bad request', async () => {
         .expect(400)
 })
 
-describe('deletion of a note', () => {
+describe('deletion of a blog', () => {
     test('succeeds with 204 if valid id', async () => {
         const blogs = await helper.blogsInDb()
         const blogToDelete = blogs[0]
@@ -82,11 +82,11 @@ describe('deletion of a note', () => {
         expect(blogsAfter.map(b => b.title)).not.toContain(blogToDelete.title)
     })
     
-    test('fails with 404 if note does not exist', async () => {
+    test('fails with 404 if blog does not exist', async () => {
         const id = await helper.nonExistingId()
         await api
             .delete(`/api/blogs/${id}`)
-            // .expect(404)
+            .expect(404)
         
         const blogs = await helper.blogsInDb()
 
@@ -94,6 +94,45 @@ describe('deletion of a note', () => {
     })
 })
 
+describe('updating a note', () => {
+    test('suceeds with 200 if valid id', async () => {
+        const blogs = await helper.blogsInDb()
+        const blog = blogs[0]
+        const updatedBlog = {
+            title: blog.title,
+            url: blog.url,
+            likes: 9000,
+            author: blog.author
+        }
+        await api
+            .put(`/api/blogs/${blog.id}`)
+            .send(updatedBlog)
+            .expect(200)
+
+        const updatedBlogs = await helper.blogsInDb()
+        expect(updatedBlogs).toHaveLength(helper.initialBlogs.length)
+        expect(updatedBlogs.map(b => b.likes)).toContain(9000)
+    })
+    test('fails with 404 if blog does not exist', async () => {
+        const blogs = await helper.blogsInDb()
+        const blog = blogs[0]
+        const updatedBlog = {
+            title: blog.title,
+            url: blog.url,
+            likes: 9000,
+            author: blog.author
+        }
+        const id = await helper.nonExistingId()
+        await api
+            .put(`/api/blogs/${id}`)
+            .send(updatedBlog)
+            .expect(404)
+
+        const updatedBlogs = await helper.blogsInDb()
+        expect(updatedBlogs).toHaveLength(helper.initialBlogs.length)
+        expect(updatedBlogs.map(b => b.likes)).not.toContain(9000)
+    })
+})
 
 afterAll(async () => {
     await mongoose.connection.close()
