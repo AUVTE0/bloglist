@@ -1,16 +1,18 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
-const bcrypt = require('bcrypt')
-const logger = require('../utils/logger')
+
 //blogs api
 blogsRouter.get('/', async (req, res) => {
     const blogs = await Blog.find({})
+        .populate('user', { blogs: 0 })
     res.json(blogs)
 })
 
 blogsRouter.post('/', async (req, res, next) => {
-    const blog = new Blog(req.body)
+    const user = await User.findOne()
+    const blog = new Blog({...req.body, user: user._id})
+
     try {
         const result = await blog.save()
         res.status(201).json(result)
@@ -47,23 +49,7 @@ blogsRouter.put('/:id', async (req, res, next) => {
     }
 })
 
-//login router
-blogsRouter.post('/api/users', async (req, res, next) => {
-    logger.info("hello")
-    try {
-        const user = new User({
-            username: req.body.username,
-            name: req.body.name,
-            password: bcrypt.hash(req.body.password,10)
-        })
 
-        const result = await user.save()
-        res.status(201).json(result)
-    }
-    catch (exception) {
-        next(exception)
-    }
-})
 
 module.exports = blogsRouter
 
