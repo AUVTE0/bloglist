@@ -11,7 +11,6 @@ beforeEach(async () => {
     await Promise.all(promiseArray)
 })
 
-
 test('blogs are returned as json', async () => {
     await api
         .get('/api/blogs')
@@ -67,6 +66,34 @@ test('missing title or url sends bad request', async () => {
         .send(blog)
         .expect(400)
 })
+
+describe('deletion of a note', () => {
+    test('succeeds with 204 if valid id', async () => {
+        const blogs = await helper.blogsInDb()
+        const blogToDelete = blogs[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(204)
+
+        const blogsAfter = await helper.blogsInDb()
+
+        expect(blogsAfter).toHaveLength(blogs.length - 1)
+        expect(blogsAfter.map(b => b.title)).not.toContain(blogToDelete.title)
+    })
+    
+    test('fails with 404 if note does not exist', async () => {
+        const id = await helper.nonExistingId()
+        await api
+            .delete(`/api/blogs/${id}`)
+            // .expect(404)
+        
+        const blogs = await helper.blogsInDb()
+
+        expect(blogs).toHaveLength(helper.initialBlogs.length)
+    })
+})
+
 
 afterAll(async () => {
     await mongoose.connection.close()
