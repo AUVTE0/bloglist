@@ -57,6 +57,17 @@ test('missing like defaults to 0', async () => {
     expect(res.body.pop().likes).toBe(0)
 })
 
+test('missing title or url sends bad request', async () => {
+    const blog = {
+        author: 'test author',
+        likes: 5
+    }
+    await api
+        .post('/api/blogs')
+        .send(blog)
+        .expect(400)
+})
+
 afterAll(async () => {
     await mongoose.connection.close()
 })
