@@ -42,6 +42,21 @@ test('blog is created successfully', async () => {
     expect(res.body.map(b => b.title)).toContain('test blog')
 })
 
+test('missing like defaults to 0', async () => {
+    const blog = {
+        title: 'test blog',
+        author: 'test author',
+        url: 'testUrl',
+    }
+    await api
+        .post('/api/blogs')
+        .send(blog)
+        .expect(201)
+
+    const res = await api.get('/api/blogs')
+    expect(res.body.pop().likes).toBe(0)
+})
+
 afterAll(async () => {
     await mongoose.connection.close()
 })
