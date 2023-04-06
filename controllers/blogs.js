@@ -1,6 +1,15 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+
+const getTokenFromRequest = req => {
+    const auth = req.get('authorization')
+    
+    if(auth && auth.startsWith('Bearer '))
+        return auth.replace('Bearer ','')
+    return null
+}
 
 //blogs api
 blogsRouter.get('/', async (req, res) => {
@@ -10,10 +19,15 @@ blogsRouter.get('/', async (req, res) => {
 })
 
 blogsRouter.post('/', async (req, res, next) => {
-    const user = await User.findOne()
-    const blog = new Blog({...req.body, user: user._id})
-
+    
     try {
+        const decodedToken = jwt.verify(getTokenFromRequest(req), process.env.SECRET)
+        
+        if(!decodedToken.id)
+            return res.status(401).json({error: 'invalid token'})
+        
+        const user = await User.findById(decodedToken.id)
+        const blog = new Blog({...req.body, user: user._id})
         const savedBlog = await blog.save()
 
         user.blogs = user.blogs.concat(savedBlog._id)
@@ -31,7 +45,7 @@ blogsRouter.delete('/:id', async (req, res, next) => {
         if(result)
             res.status(204).json(result)
         else
-            res.status(404).json(result)
+            return res.status(404).json(result)
     }
     catch (exception) {
         next(exception)
@@ -45,7 +59,7 @@ blogsRouter.put('/:id', async (req, res, next) => {
         if(result)
             res.status(200).json(result)
         else
-            res.status(404).json(result)
+            return res.status(404).json(result)
     }
     catch (exception) {
         next(exception)

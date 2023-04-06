@@ -44,17 +44,17 @@ const initialUsers = [
     {
         username: 'mickey',
         name: 'Michael Chan',
-        passwordHash: 'password1',
+        password: 'password1',
     },
     {
         username: 'edster',
         name: 'Edsger W. Dijkstra',
-        passwordHash: 'password2',
+        password: 'password2',
     },
     {
         username: 'rmartin',
         name: 'Robert C. Martin',
-        passwordHash: 'password3',
+        password: 'password3',
     }
 ]
 
