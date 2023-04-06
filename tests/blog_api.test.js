@@ -5,6 +5,7 @@ const helper = require('./test_helper')
 const api = supertest(app)
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const { JsonWebTokenError } = require('jsonwebtoken')
 
 beforeEach(async () => {
     await Blog.deleteMany({})
@@ -105,24 +106,46 @@ describe('creating new blog', () => {
 
 
 describe('deletion of a blog', () => {
-    test('succeeds with 204 if valid id', async () => {
-        const blogs = await helper.blogsInDb()
-        const blogToDelete = blogs[0]
+    jest.setTimeout(30000)
+    test('by different user fails with 401', async () => {
+        const blogToDelete = helper.initialBlogs[0]
+        const diffUser = helper.initialUsers[1]
+        const token = helper.createToken(diffUser)
 
         await api
-            .delete(`/api/blogs/${blogToDelete.id}`)
+            .delete(`/api/blogs/${blogToDelete._id}`)
+            .set('Authorization',`Bearer ${token}`)
+            .expect(401)
+
+        const blogsAfter = await helper.blogsInDb()
+
+        expect(blogsAfter).toHaveLength(helper.initialBlogs.length)
+        expect(blogsAfter.map(b => b.title)).toContain(blogToDelete.title)
+    })
+    test('succeeds with 204 if valid id and token', async () => {
+        const blogToDelete = helper.initialBlogs[0]
+        const user = helper.initialUsers[0]
+        const token = helper.createToken(user)
+
+        await api
+            .delete(`/api/blogs/${blogToDelete._id}`)
+            .set('Authorization',`Bearer ${token}`)
             .expect(204)
 
         const blogsAfter = await helper.blogsInDb()
 
-        expect(blogsAfter).toHaveLength(blogs.length - 1)
+        expect(blogsAfter).toHaveLength(helper.initialBlogs.length - 1)
         expect(blogsAfter.map(b => b.title)).not.toContain(blogToDelete.title)
     })
     
     test('fails with 404 if blog does not exist', async () => {
         const id = await helper.nonExistingId()
+        const user = helper.initialUsers[0]
+        const token = helper.createToken(user)
+
         await api
             .delete(`/api/blogs/${id}`)
+            .set('Authorization',`Bearer ${token}`)
             .expect(404)
         
         const blogs = await helper.blogsInDb()

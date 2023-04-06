@@ -119,6 +119,15 @@ const createValidToken = async () => {
     return jwt.sign(userForToken, process.env.SECRET)
 }
 
+const createToken = (user) => {
+    const userForToken = {
+        username: user.username,
+        id: user._id
+    }
+    
+    return jwt.sign(userForToken, process.env.SECRET)
+}
+
 const createInvalidToken = () => {
     const userForToken = {
         username: 'nonExistingUser',
@@ -137,5 +146,6 @@ module.exports = {
     saveInitialBlogs,
     saveInitialUsers,
     createValidToken,
-    createInvalidToken
+    createInvalidToken,
+    createToken
 }
