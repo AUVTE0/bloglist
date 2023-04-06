@@ -33,8 +33,18 @@ const unknownEndpoint = (req, res) => {
     res.status(400).send({error: 'unknown endpoint'})
 }
 
+const tokenExtractor = (req, res, next) => {
+    const auth = req.get('authorization')
+    
+    req['token'] = (auth && auth.startsWith('Bearer '))?
+        auth.replace('Bearer ','')
+        :null
+    next()
+}
+
 module.exports = {
     requestLogger,
     errorHandler,
-    unknownEndpoint
+    unknownEndpoint,
+    tokenExtractor
 }
