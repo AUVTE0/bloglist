@@ -2,6 +2,7 @@ const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
+const { userExtractor } = require('../utils/middleware')
 
 //blogs api
 blogsRouter.get('/', async (req, res) => {
@@ -10,15 +11,16 @@ blogsRouter.get('/', async (req, res) => {
     res.json(blogs)
 })
 
-blogsRouter.post('/', async (req, res, next) => {
+blogsRouter.post('/', userExtractor, async (req, res, next) => {
     
     try {
-        const decodedToken = jwt.verify(req.token, process.env.SECRET)
+        // const decodedToken = jwt.verify(req.token, process.env.SECRET)
         
-        if(!decodedToken.id)
-            return res.status(401).json({error: 'invalid token'})
+        // if(!decodedToken.id)
+        //     return res.status(401).json({error: 'invalid token'})
         
-        const user = await User.findById(decodedToken.id)
+        // const user = await User.findById(decodedToken.id)
+        const user = req.user
         const blog = new Blog({...req.body, user: user._id})
         const savedBlog = await blog.save()
 
@@ -31,11 +33,12 @@ blogsRouter.post('/', async (req, res, next) => {
     }
 })
 
-blogsRouter.delete('/:id', async (req, res, next) => {
+blogsRouter.delete('/:id', userExtractor, async (req, res, next) => {
     try {
-        const decodedToken = jwt.verify(req.token, process.env.SECRET)
+        // const decodedToken = jwt.verify(req.token, process.env.SECRET)
 
-        const user = await User.findById(decodedToken.id)
+        // const user = await User.findById(decodedToken.id)
+        const user = req.user
         const blog = await Blog.findById(req.params.id)
         
         if(!blog)
