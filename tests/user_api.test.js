@@ -24,6 +24,21 @@ describe('get users', () => {
         const res = await api.get('/api/users')
         expect(res.body[0].passwordHash).not.toBeDefined()
     })
+
+    test('populates blogs', async () => {
+        await Blog.deleteMany()
+        const newBlog = {
+            title: 'test blog',
+            author: 'test author',
+            url: 'testUrl',
+            likes: 5
+        }
+        await api.post('/api/blogs')
+            .send(newBlog)
+        const res = await api.get('/api/users')
+        console.log(res.body[0])
+        expect(res.body[0].blogs[0].title).toBeDefined()
+    })
 })
 
 describe('creating new user', () => {

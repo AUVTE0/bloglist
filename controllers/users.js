@@ -1,7 +1,6 @@
 const usersRouter = require('express').Router()
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
-const logger = require('../utils/logger')
 
 //login router
 usersRouter.post('/', async (req, res, next) => {
@@ -30,7 +29,7 @@ usersRouter.post('/', async (req, res, next) => {
 
 usersRouter.get('/', async (req, res, next) => {
     try {
-        const users = await User.find({}).populate('blogs')
+        const users = await User.find({}).populate('blogs', {'user': 0})
         res.status(200).json(users)
     }
     catch (exception){
