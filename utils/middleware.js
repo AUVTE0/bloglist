@@ -11,7 +11,7 @@ const requestLogger = (req, res, next) => {
 }
 
 const errorHandler = (error, req, res, next) => {
-    logger.error(error.message)
+    logger.error(error.name, error.message)
 
     if (error.name === 'CastError'){
         return res.status(400).send({ error: 'malformed id'})
@@ -21,6 +21,9 @@ const errorHandler = (error, req, res, next) => {
     }
     if (error.name === 'ValidationError'){
         return res.status(400).send({ error: 'missing property or incorrect type'})
+    }
+    if (error.name === 'JsonWebTokenError'){
+        return res.status(401).send({ error: 'invalid token'})
     }
     next(error)
 }

@@ -7,9 +7,10 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 
 beforeEach(async () => {
-    await User.deleteMany({})
-    const promiseArray = helper.initialUsers.map(u => (new User(u)).save())
-    await Promise.all(promiseArray)
+    await User.deleteMany()
+    await Blog.deleteMany()
+    await helper.saveInitialBlogs(helper.initialBlogs)
+    await helper.saveInitialUsers(helper.initialUsers)
 })
 
 describe('get users', () => {
@@ -26,17 +27,7 @@ describe('get users', () => {
     })
 
     test('populates blogs', async () => {
-        await Blog.deleteMany()
-        const newBlog = {
-            title: 'test blog',
-            author: 'test author',
-            url: 'testUrl',
-            likes: 5
-        }
-        await api.post('/api/blogs')
-            .send(newBlog)
         const res = await api.get('/api/users')
-        console.log(res.body[0])
         expect(res.body[0].blogs[0].title).toBeDefined()
     })
 })

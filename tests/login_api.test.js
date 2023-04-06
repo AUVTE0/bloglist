@@ -7,9 +7,10 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 
 beforeEach(async () => {
-    await User.deleteMany({})
-    const promiseArray = helper.initialUsers.map(u => api.post('/api/users').send(u))
-    await Promise.all(promiseArray)
+    await User.deleteMany()
+    await Blog.deleteMany()
+    await helper.saveInitialUsers(helper.initialUsers)
+    await helper.saveInitialBlogs(helper.initialBlogs)
 })
 
 describe('user login', () => {

@@ -4,11 +4,13 @@ const app = require('../app')
 const helper = require('./test_helper')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 beforeEach(async () => {
     await Blog.deleteMany({})
-    const promiseArray = helper.initialBlogs.map(b => (new Blog(b)).save())
-    await Promise.all(promiseArray)
+    await User.deleteMany()
+    await helper.saveInitialBlogs(helper.initialBlogs)
+    await helper.saveInitialUsers(helper.initialUsers)
 })
 
 describe('get blogs', () => {
@@ -20,18 +22,19 @@ describe('get blogs', () => {
     })
     
     test('UID property is named id', async () => {
-        const blogs = await helper.blogsInDb()
-        console.log(blogs)
-        expect(blogs[0].id).toBeDefined()
+        const res = await api.get('/api/blogs')
+        expect(res.body[0].id).toBeDefined()
     })
 
     test('populates user field correctly', async () => {
-
+        const res = await api.get('/api/blogs')
+        expect(res.body[0].user.username).toBeDefined()
     })
 })
 
 describe('creating new blog', () => {
-    test('with valid params returns 201', async () => {
+    test('with invalid token returns 401', async() => {
+        const token = 'invalidToken'
         const blog = {
             title: 'test blog',
             author: 'test author',
@@ -40,34 +43,37 @@ describe('creating new blog', () => {
         }
         await api
             .post('/api/blogs')
+            .set('Authorization',`Bearer ${token}`)
+            .send(blog)
+            .expect(401)
+        const blogs = await helper.blogsInDb()
+        expect(blogs.length).toBe(helper.initialBlogs.length)
+    })
+    test('with valid token and  params returns 201 and assigns user', async () => {
+        await Blog.deleteMany()
+        const token = await helper.createValidToken()
+        const blog = {
+            title: 'test blog',
+            author: 'test author',
+            url: 'testUrl',
+            likes: 5
+        }
+        await api
+            .post('/api/blogs')
+            .set('Authorization',`Bearer ${token}`)
             .send(blog)
             .expect(201)
     
         const res = await api.get('/api/blogs')
-        expect(res.body).toHaveLength(helper.initialBlogs.length + 1)
+        expect(res.body).toHaveLength(1)
         expect(res.body.map(b => b.title)).toContain('test blog')
-    })
-    test('with valid params assigns user', async () => {
-        await Blog.deleteMany()
-        const newBlog = {
-            title: 'test blog',
-            author: 'test author',
-            url: 'testUrl',
-            likes: 5
-        }
-        await api.post('/api/blogs')
-            .send(newBlog)
-        
-        const blog = await Blog.findOne()
-        // console.log(blog)
-        expect(blog.user).toBeDefined()
-
-        const res = await api.get('/api/blogs')
-        console.log(res.body)
         expect(res.body[0].user.username).toBeDefined()
+        console.log(res.body[0].user.username)
     })
     
     test('with missing like defaults to 0', async () => {
+        Blog.deleteMany()
+        const token = await helper.createValidToken()
         const blog = {
             title: 'test blog',
             author: 'test author',
@@ -75,6 +81,7 @@ describe('creating new blog', () => {
         }
         await api
             .post('/api/blogs')
+            .set('Authorization',`Bearer ${token}`)
             .send(blog)
             .expect(201)
     
@@ -83,12 +90,14 @@ describe('creating new blog', () => {
     })
     
     test('with missing title or url sends bad request', async () => {
+        const token = await helper.createValidToken()
         const blog = {
             author: 'test author',
             likes: 5
         }
         await api
             .post('/api/blogs')
+            .set('Authorization',`Bearer ${token}`)
             .send(blog)
             .expect(400)
     })
